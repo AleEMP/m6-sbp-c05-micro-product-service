@@ -1,0 +1,14 @@
+server:
+  port: 8082
+
+spring:
+  profiles:
+    active: local
+
+  application:
+    name: product-service
+
+
+user:
+  service:
+    url: http://user-service-dev:8081
