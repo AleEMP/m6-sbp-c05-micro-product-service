@@ -1,7 +1,6 @@
 package com.tecsup.app.micro.product.client;
 
-import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
-import lombok.AllArgsConstructor;
+// 1. Eliminamos el import de resilience4j
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -9,7 +8,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
 @Slf4j
-//@AllArgsConstructor
 @RequiredArgsConstructor
 @Component
 public class UserClient {
@@ -19,21 +17,24 @@ public class UserClient {
     @Value("${user.service.url}")
     private String userServiceUrl;
 
-
-    @CircuitBreaker(name = "userService",
-            fallbackMethod = "getUserByIdFallback")
+    // 2. Quitamos la anotación @CircuitBreaker
     public User getUserById(Long createdBy) {
-
         String url = userServiceUrl + "/api/users/" + createdBy;
-        User usr = restTemplate.getForObject(url, User.class);
-        log.info("User retrieved successfully from userdb: {}", usr);
-        return usr;
 
+        // 3. Usamos un try-catch simple para replicar el "fallback"
+        try {
+            User usr = restTemplate.getForObject(url, User.class);
+            log.info("User retrieved successfully from userdb: {}", usr);
+            return usr;
+        } catch (Exception e) {
+            // 4. Aquí llamamos a la lógica de error si falla la conexión
+            return getUserByIdFallback(createdBy, e);
+        }
     }
 
-
+    // Convertimos este método en privado y lo llamamos manualmente desde el catch
     private User getUserByIdFallback(Long createdBy, Throwable throwable) {
-        log.warn("Fallback method invoked for getUserById due to: {}", throwable.getMessage());
+        log.warn("Error calling User Service (Fallback active): {}", throwable.getMessage());
         return User.builder()
                 .id(createdBy)
                 .name("Unknown User")
