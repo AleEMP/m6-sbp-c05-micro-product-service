@@ -8,12 +8,14 @@ pipeline {
                 checkout scm
             }
         }
+
         stage('Compile') {
             steps {
                 echo 'Compile the project'
                 sh 'mvn clean compile'
             }
         }
+
         stage('Test') {
             steps {
                 echo 'Test the project'
@@ -26,6 +28,8 @@ pipeline {
                 sh 'mvn package -DskipTests'
             }
         }
+
+
     }
 
     post {
@@ -36,4 +40,5 @@ pipeline {
             echo 'Build failed. Please check the logs.'
         }
     }
+
 }
